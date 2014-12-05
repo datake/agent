@@ -13,7 +13,9 @@ using namespace std;
 int read_data();
 //２点間の距離を出力する関数。Gaussカーネルで利用
 double norm(double x_i_0,double x_i_1,double x_j_0,double x_j_1);
+double PolinomicalKernel(double x_i_0,double x_i_1,double x_j_0,double x_j_1);
 
+double GaussianKernel(double x_i_0,double x_i_1,double x_j_0,double x_j_1);
 struct Dataset{
 	double input_first,input_second,y;
 
@@ -31,7 +33,8 @@ int main (int argc, char *const argv[]) {
 	       CE[MATRIX_DIM][MATRIX_DIM], ce0[MATRIX_DIM], 
 	       CI[MATRIX_DIM][MATRIX_DIM], ci0[MATRIX_DIM], 
 	       alpha[MATRIX_DIM];
-
+	double weight[2],theta;
+	double x,y,sigma=10.0;
 
 	int n, m, p;	
 
@@ -47,7 +50,7 @@ int main (int argc, char *const argv[]) {
 	  double y[100];
 	 */
 	//cout << "ifstream" << endl;
-	ifstream ifs("sample_linear.dat");
+	ifstream ifs("sample_circle.dat");
 	string str;
 
 	if(ifs.fail()) {
@@ -100,44 +103,49 @@ int main (int argc, char *const argv[]) {
 
 		 */
 		for (int i = 0; i < n; i++){	
-			/*//0のクラス出力
+			//0のクラス出力
 			if(data[i].y==-1){
 				cout << data[i].input_first <<"\t"<< data[i].input_second<<endl;
 
-			}*/
+			}
 			for (int j = 0; j < n; j++){
 
-				{
+				{/*
 
 					//ただの内積バージョン
 					G[i][j] =(double)data[i].y*data[j].y*(data[i].input_first*data[j].input_first+data[i].input_second*data[j].input_second);
 
 					if(i==j) G[i][j]+=1.0e-9;
-
+*/
 				}
-				{/*
-					//多項式カーネル。うまくいかない
-					Kernel=(double)pow((1.0+data[i].input_first*data[j].input_first+data[i].input_second*data[j].input_second),2.0);
-					G[i][j] =(double)data[i].y*data[j].y*Kernel;
+				{
+				
+				/*	//多項式カーネル。うまくいかない
+					
+					//Kernel=(double)pow((1.0+data[i].input_first*data[j].input_first+data[i].input_second*data[j].input_second),2.0);
+					G[i][j] =(double)data[i].y*data[j].y*PolinomicalKernel(data[i].input_first,data[i].input_second,data[j].input_first,data[i].input_second);
+
+
 					if(i==j) G[i][j]+=1.0e-7;
 				  */
 				}
 				{
-					/*
+					
 					//Gauseカーネル  exp(-sum(pow(x - y, 2)) / 2.0 / sigma / sigma);
-					double sigma=10.0;
-					Kernel=(double)exp(norm(data[i].input_first,data[i].input_second,data[j].input_first,data[j].input_second)/2.0/sigma/sigma);
+					//sigma=10.0;
+					//Kernel=exp(-norm(data[i].input_first,data[i].input_second,data[j].input_first,data[j].input_second)/2.0/sigma/sigma);
 
 					//cout<< (double)norm(data[i].input_first,data[i].input_second,data[j].input_first,data[j].input_second)<<endl;		 
 
-					G[i][j] =(double)data[i].y*data[j].y*Kernel;
-
-					if(i==j) G[i][j]+=1.0e-9;
+					G[i][j] =data[i].y*data[j].y*PolinomicalKernel(data[i].input_first,data[i].input_second,data[j].input_first,data[i].input_second);
 
 
+					if(i==j) G[i][j]+=1.0e-7;
 
-					cout<<"G["<<i<<"]["<<j<<"]=" << G[i][j] <<endl;
-					 */		 
+
+
+					//cout<<"G["<<i<<"]["<<j<<"]=" << G[i][j] <<endl;
+					 		 
 				}
 				{/*
 					//シグモイドカーネル
@@ -233,20 +241,54 @@ int main (int argc, char *const argv[]) {
 	
 	//出力
 	cout<<"alpha"<<endl;
-	for (size_t i = 0; i <n; i++)
-	printf("%zu\t%f\n", i, alpha[i]);//alphaは浮動小数点型で出力
+	for ( i = 0; i <n; i++)
+	printf("%d\t%f\n", i, alpha[i]);//alphaは浮動小数点型で出力
 
 	 
+	//重みweight出力
+	
+	for(i=0;i<n;i++){
+		weight[0]+=alpha[i]*data[i].y*data[i].input_first;
+		weight[1]+=alpha[i]*data[i].y*data[i].input_second;
+
+
+	}
+	cout<<"weight[0]="<<weight[0]<<endl;
+	cout<<"weight[1]="<<weight[1]<<endl;
+
+	//しきい値theta出力
+	//本来はどのalpha[k]のときでもthetaは同じになるはずである。ここではk=5をとる
+	theta=(weight[0]*data[5].input_first+weight[1]*data[5].input_second)-data[5].y;
+	cout<<"theta="<<theta<<endl;
+
+	//(w,x)=thetaとなるときを考える(カーネルトリックなし)
+	cout<<weight[0]<<"x+"<<weight[1]<<"y="<<theta<<endl;
+	
+
+	//Kernel(w,x)=thetaとなるときを考える
+	cout<<"Ga"<<endl;
+	cout<<"exp(-("<<weight[0]<<"-x)**2-("<<weight[1]<<"-y)**2/2.0/"<<sigma<<"/"<<sigma<<")="<<theta<<endl;
 
 
 
-
-
-
+/*
+	//gnuplotで描画できる2点書き出し
+	printf("%f\t%f\n",0.00,theta/weight[1]);
+	printf("%f\t%f\n",theta/weight[0],0.00);
+*/
 
 }
 double norm(double x_i_0,double x_i_1,double x_j_0,double x_j_1){
 	return pow(x_i_0 -x_j_0,2.0)+ pow(x_i_1 -x_j_1,2.0);
 
 }
+double PolinomicalKernel(double x_i_0,double x_i_1,double x_j_0,double x_j_1){
+	return pow((1.0+x_i_0*x_j_0+x_i_1*x_j_1),2.0);
+	
+}
 
+double GaussianKernel(double x_i_0,double x_i_1,double x_j_0,double x_j_1){
+	return exp(-norm(data[i].input_first,data[i].input_second,data[j].input_first,data[j].input_second)/2.0/sigma/sigma);
+
+
+}

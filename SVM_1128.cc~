@@ -1,0 +1,176 @@
+#include <iostream>
+#include <string>
+#include <fstream>
+#include<stdlib.h>
+#include "QuadProg++.hh"
+#define DATA_NUM 100
+
+
+using namespace std;
+
+//プロトタイプ宣言
+int read_data();
+struct Dataset{
+double input_first,input_second,input_result;
+
+};
+
+int read_data() {
+       return 0;
+}
+
+
+
+
+int main (int argc, char *const argv[]) {
+	double G[MATRIX_DIM][MATRIX_DIM], g0[MATRIX_DIM], 
+		CE[MATRIX_DIM][MATRIX_DIM], ce0[MATRIX_DIM], 
+		CI[MATRIX_DIM][MATRIX_DIM], ci0[MATRIX_DIM], 
+		x[MATRIX_DIM];
+	int n, m, p;	
+	//int result;	
+	double sum = 0.0;
+	//char ch;
+	int i=0;
+	
+ 
+ 	struct Dataset data[100];
+        //ifstreamでファイル読み込んで、data[0]からdata[99]に格納
+	/*double x[100][100];
+	double y[100];
+	*/
+        //cout << "ifstream" << endl;
+        ifstream ifs("data.txt");
+        string str;
+
+        if(ifs.fail()) {
+                cerr << "File do not exist.\n";
+                exit(0);
+        }
+       
+        while(getline(ifs, str)) {
+                if(i==100) break;
+                data[i].input_first=0; data[i].input_second=0; data[i].input_result=0;
+                //x[i][]
+		sscanf(str.data(), "%lf %lf %lf", &data[i].input_first, &data[i].input_second, &data[i].input_result);
+               /*cout<<i<<endl;
+                cout << "first = " << data[i].input_first << endl;
+                cout << "second = " << data[i].input_second << endl;
+                cout << "result = " <<  data[i].input_result << endl;
+*/
+/*
+		x[i][0]=data[i].input_first;
+		x[i][1]=data[i].input_second;
+		y[i]=data[i].input_result;
+*/				
+
+
+                i++;
+        }
+//G[i][j]
+  n = DATA_NUM;
+
+  {
+	
+/*
+Gの(i,j)要素はy_i*y_j*(x_i,x_j)
+(x_i,x_j)=(1+x_i*x_j)^2=((x[i][0] ,x[i][1] ),(x[j][0],x[j][1]))
+
+
+(6 37)はx1ベクトル 
+(48 27) はx2ベクトル
+..
+
+-1はy1ベクトル
+-1はy2ベクトル
+
+x[i][0]=data[i].input_first;
+x[i][1]=data[i].input_second;
+y[i]=data[i].input_result;
+
+
+*/
+		for (int i = 0; i < n; i++){	
+			for (int j = 0; j < n; j++){
+				//G[i][j]=y_i*y_j*(x_i,x_j)
+				//(x_i,x_j)=(1+x_i*x_j)^2
+				 G[i][j] =data[i].input_result*data[j].input_result*(1+data[i].input_first*data[j].input_first)*(1+data[i].input_first*data[j].input_first);//?
+				//cout << i <<endl;
+			}		
+
+		}
+}
+	
+  {//g0の要素は全て-1
+
+		for (int i = 0; i < n; i++)
+		g0[i] =(double) -1;
+	}
+  
+  m = 1;
+	{//CEは(y1 y2 .. yn)
+	for (int i = 0; i < n; i++)
+			for (int j = 0; j < m; j++)
+			CE[i][j] =data[i].input_result;
+	} 
+  
+	{//ce0は0
+	for (int j = 0; j < m; j++)
+		ce0[j] =(double)0;
+  }
+	
+	p = 101;
+  {
+/*CIは
+(1 0 0 0 0 1)
+(0 1 0 0 0 1)
+(0 0 1 0 0 1)
+(0 0 0 1 0 1)
+(0 0 0 0 1 1)
+*/
+//		std::istringstream is("1.0, 0.0, 0.0,0.0,0.0,1.0 " 
+//		"0.0, 1.0, 0.0,0.0,0.0,1.0 " "0.0, 0.0, 1.0,0.0,0.0,1.0 "
+//		 "0.0, 0.0, 0.0,1.0,0.0,1.0 "); 
+		for (int i = 0; i < n; i++)
+			for (int j = 0; j < p; j++)
+				if(j==p||i==j){
+				 CI[i][j]=(double)1;
+				}else{
+				 CI[i][j]=(double)0;
+				}
+	}
+  
+  {
+//ci0は(0 0 0 0 0 0)
+		for (int j = 0; j < p; j++)
+			ci0[j] =(double)0;
+	}
+
+  //std::cout << "f: " << solve_quadprog(G, g0, n, CE, ce0, m, CI, ci0, p, x) << std::endl;
+	std::cout << "x: ";
+  for (int i = 0; i < n; i++)
+   std::cout <<"x["<<i<<"]"<< x[i] << ' ';
+	std::cout << std::endl;	
+
+	/* FOR DOUBLE CHECKING COST since in the solve_quadprog routine the matrix G is modified */
+	
+	{
+   /* std::istringstream is("4, -2,"
+													"-2, 4 ");
+	*/
+		for (int i = 0; i < n; i++)
+			for (int j = 0; j < n; j++)
+				 G[i][j] =data[i].input_result*data[j].input_result;//ok?
+
+	}
+	
+	for (int i = 0; i < n; i++)
+		for (int j = 0; j < n; j++)
+			sum += x[i] * G[i][j] * x[j];
+	sum *= 0.5;
+	
+	std::cout << "Double checking cost: ";
+	for (int i = 0; i < n; i++)
+		sum += g0[i] * x[i];
+	std::cout<<"sum" << sum << std::endl;
+}
