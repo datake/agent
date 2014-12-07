@@ -5,7 +5,7 @@
 #include "QuadProg++.hh"
 #include <cmath>
 #define DATA_NUM 100
-
+#define sigma 10.0
 
 using namespace std;
 
@@ -32,9 +32,9 @@ int main (int argc, char *const argv[]) {
 	double G[MATRIX_DIM][MATRIX_DIM], g0[MATRIX_DIM], 
 	       CE[MATRIX_DIM][MATRIX_DIM], ce0[MATRIX_DIM], 
 	       CI[MATRIX_DIM][MATRIX_DIM], ci0[MATRIX_DIM], 
-	       alpha[MATRIX_DIM];
+	       alpha[MATRIX_DIM],plot[MATRIX_DIM];
 	double weight[2],theta;
-	double x,y,sigma=10.0;
+	double x,y;
 
 	int n, m, p;	
 
@@ -82,70 +82,68 @@ int main (int argc, char *const argv[]) {
 
 
 	{
+		{
+			/*
+			   Gの(i,j)要素はy_i*y_j*(x_i,x_j)
+			   (x_i,x_j)=(1+x_i*x_j)^2=((x[i][0] ,x[i][1] ),(x[j][0],x[j][1]))
 
-		/*
-		   Gの(i,j)要素はy_i*y_j*(x_i,x_j)
-		   (x_i,x_j)=(1+x_i*x_j)^2=((x[i][0] ,x[i][1] ),(x[j][0],x[j][1]))
 
+			   (6 37)はx1ベクトル 
+			   (48 27) はx2ベクトル
+			   ..
 
-		   (6 37)はx1ベクトル 
-		   (48 27) はx2ベクトル
-		   ..
+			   -1はy1ベクトル
+			   -1はy2ベクトル
 
-		   -1はy1ベクトル
-		   -1はy2ベクトル
+			   x[i][0]=data[i].input_first;
+			   x[i][1]=data[i].input_second;
+			   y[i]=data[i].y;
+			//G[i][j]=y_i*y_j*(x_i,x_j)
+			//(x_i,x_j)=(1+x_i*x_j)^2
 
-		   x[i][0]=data[i].input_first;
-		   x[i][1]=data[i].input_second;
-		   y[i]=data[i].y;
-		//G[i][j]=y_i*y_j*(x_i,x_j)
-		//(x_i,x_j)=(1+x_i*x_j)^2
+			 */
+			for (int i = 0; i < n; i++){	
+				//0のクラス出力
+				if(data[i].y==-1){
+					cout << data[i].input_first <<"\t"<< data[i].input_second<<endl;
 
-		 */
-		for (int i = 0; i < n; i++){	
-			//0のクラス出力
-			if(data[i].y==-1){
-				cout << data[i].input_first <<"\t"<< data[i].input_second<<endl;
-
-			}
-			for (int j = 0; j < n; j++){
-
-				{/*
-
-					//ただの内積バージョン
-					G[i][j] =(double)data[i].y*data[j].y*(data[i].input_first*data[j].input_first+data[i].input_second*data[j].input_second);
-
-					if(i==j) G[i][j]+=1.0e-9;
-*/
 				}
-				{
-				
-				/*	//多項式カーネル。うまくいかない
-					
-					//Kernel=(double)pow((1.0+data[i].input_first*data[j].input_first+data[i].input_second*data[j].input_second),2.0);
-					G[i][j] =(double)data[i].y*data[j].y*PolinomicalKernel(data[i].input_first,data[i].input_second,data[j].input_first,data[i].input_second);
+				for (int j = 0; j < n; j++){
+
+					//C/C++ではargv[]はchar型
+					string argv1;
+					if(argv[1]){
+						argv1=argv[1];
+					}else{
+						argv1="No Kernel";
+					}
+					cout<<argv1<<endl;
+					if(argv1=="P"){
+						//cout<<"PolinomicalKernel"<<endl;
+						Kernel=PolinomicalKernel(data[i].input_first,data[i].input_second,data[j].input_first,data[j].input_second);
 
 
-					if(i==j) G[i][j]+=1.0e-7;
-				  */
-				}
-				{
-					
-					//Gauseカーネル  exp(-sum(pow(x - y, 2)) / 2.0 / sigma / sigma);
-					//sigma=10.0;
-					//Kernel=exp(-norm(data[i].input_first,data[i].input_second,data[j].input_first,data[j].input_second)/2.0/sigma/sigma);
+					}else if(argv1=="G"){
+						//cout<<"GaussianKernel"<<endl;
+						Kernel=GaussianKernel(data[i].input_first,data[i].input_second,data[j].input_first,data[j].input_second);
 
-					//cout<< (double)norm(data[i].input_first,data[i].input_second,data[j].input_first,data[j].input_second)<<endl;		 
+					}else{
+						//cout<<"NO Kernel"<<endl;
+						//内積でカーネルトリックなし
+						Kernel=(data[i].input_first*data[j].input_first+data[i].input_second*data[j].input_second);
 
-					G[i][j] =data[i].y*data[j].y*PolinomicalKernel(data[i].input_first,data[i].input_second,data[j].input_first,data[i].input_second);
 
+					}
+
+
+					G[i][j] =data[i].y*data[j].y*Kernel;
 
 					if(i==j) G[i][j]+=1.0e-7;
 
 
 
 					//cout<<"G["<<i<<"]["<<j<<"]=" << G[i][j] <<endl;
-					 		 
+
 				}
 				{/*
 					//シグモイドカーネル
@@ -238,15 +236,15 @@ int main (int argc, char *const argv[]) {
 	//   std::cout <<"alpha["<<i<<"]"<< alpha[i] << ' ';
 	//std::cout << std::endl;	
 
-	
+
 	//出力
 	cout<<"alpha"<<endl;
 	for ( i = 0; i <n; i++)
-	printf("%d\t%f\n", i, alpha[i]);//alphaは浮動小数点型で出力
+		printf("%d\t%f\n", i, alpha[i]);//alphaは浮動小数点型で出力
 
-	 
+
 	//重みweight出力
-	
+
 	for(i=0;i<n;i++){
 		weight[0]+=alpha[i]*data[i].y*data[i].input_first;
 		weight[1]+=alpha[i]*data[i].y*data[i].input_second;
@@ -262,20 +260,23 @@ int main (int argc, char *const argv[]) {
 	cout<<"theta="<<theta<<endl;
 
 	//(w,x)=thetaとなるときを考える(カーネルトリックなし)
-	cout<<weight[0]<<"x+"<<weight[1]<<"y="<<theta<<endl;
-	
+	//カーネルトリックなしのときの境界の式（一次式）
+	//cout<<weight[0]<<"x+"<<weight[1]<<"y="<<theta<<endl;
 
-	//Kernel(w,x)=thetaとなるときを考える
-	cout<<"Ga"<<endl;
+
+	//Kernel(w,x)=thetaとなるときが境界となる
+	cout<<"ガウスカーネルを使ったときの境界の式"<<endl;
 	cout<<"exp(-("<<weight[0]<<"-x)**2-("<<weight[1]<<"-y)**2/2.0/"<<sigma<<"/"<<sigma<<")="<<theta<<endl;
 
 
 
-/*
+	/*
 	//gnuplotで描画できる2点書き出し
 	printf("%f\t%f\n",0.00,theta/weight[1]);
 	printf("%f\t%f\n",theta/weight[0],0.00);
-*/
+	 */
+
+
 
 }
 double norm(double x_i_0,double x_i_1,double x_j_0,double x_j_1){
@@ -284,11 +285,20 @@ double norm(double x_i_0,double x_i_1,double x_j_0,double x_j_1){
 }
 double PolinomicalKernel(double x_i_0,double x_i_1,double x_j_0,double x_j_1){
 	return pow((1.0+x_i_0*x_j_0+x_i_1*x_j_1),2.0);
-	
+
 }
 
 double GaussianKernel(double x_i_0,double x_i_1,double x_j_0,double x_j_1){
-	return exp(-norm(data[i].input_first,data[i].input_second,data[j].input_first,data[j].input_second)/2.0/sigma/sigma);
+	return exp(-norm(x_i_0,x_i_1,x_j_0,x_j_1)/2.0/sigma/sigma);
 
 
 }
+
+/*
+double printGaussian(weight[0],weight[1],theta){
+	//1000点、ガウスカーネルの境界の式をプロットする。
+	for ( i = 0; i <10000; i++){
+		plot[i]=;
+		printf("%d\t%f\n", i, plot[i]);//alphaは浮動小数点型で出力
+	}
+}*/
