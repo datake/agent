@@ -6,6 +6,7 @@
 #include <cmath>
 #define DATA_NUM 100
 #define sigma 10.0
+#define FILENAME "sample_linear.dat"
 using namespace std;
 
 //構造体宣言
@@ -24,6 +25,7 @@ int read_data(Dataset*  data);
 void print_alpha(double alpha[MATRIX_DIM],int alpha_max_number);
 //int print_theta()
 void print_theta(string argv1,int alpha_max_number,Dataset* data, double weight[2],double Kernel);
+void  f(string argv1,double weight[2],int x0,int x1,double theta);
 
 
 
@@ -35,7 +37,7 @@ int main (int argc, char *const argv[]) {
   double weight[2],theta;
  
 
-  int n,m,alpha_max_number=1;	
+  int n,m,alpha_max_number=1,x0,x1;	
 
   
 
@@ -225,10 +227,13 @@ int main (int argc, char *const argv[]) {
   //thetaを出力する
   print_theta(argv1,alpha_max_number,data,weight,Kernel);
  
-
-
-
-
+  cout<<"f"<<endl;
+  for (int x0 = 0; x0 < 50; x0 ++){
+    for (int x1 = 0; x1 < 50; x1 ++){
+  //識別f
+      // f(argv1,weight,x0,x1,theta);
+    }
+  }
 
 }
 double norm(double x_i_0,double x_i_1,double x_j_0,double x_j_1){
@@ -248,7 +253,7 @@ double GaussianKernel(double x_i_0,double x_i_1,double x_j_0,double x_j_1){
 
 int read_data(Dataset* data) {
   int i=0;
-  ifstream ifs("sample_circle.dat");
+  ifstream ifs(FILENAME);
   string str;
   if(ifs.fail()) {
     cerr << "File do not exist.\n";
@@ -289,7 +294,7 @@ void print_theta(string argv1,int alpha_max_number,Dataset* data, double weight[
 
 
   //alpha_max_numberはalphaが最大の番号
-  cout<<"alpha_max_number"<<alpha_max_number<<endl;
+  // cout<<"alpha_max_number"<<alpha_max_number<<endl;
   if(argv1=="P"){
    
     Kernel=PolinomicalKernel(weight[0],weight[1],data[alpha_max_number].input_first,data[alpha_max_number].input_second);
@@ -311,5 +316,31 @@ void print_theta(string argv1,int alpha_max_number,Dataset* data, double weight[
   cout<<"theta="<<theta<<endl;
 
 
+
+}
+void  f(string argv1,double weight[2],int x0,int x1,double theta){
+
+  double Kernel;
+ if(argv1=="P"){   
+    Kernel=PolinomicalKernel(weight[0],weight[1],x0,x1);
+
+
+  }else if(argv1=="G"){
+   
+   Kernel=GaussianKernel(weight[0],weight[1],x0,x1);
+
+  }else{
+  
+    //内積でカーネルトリックなし
+    Kernel=(weight[0]*x0+weight[1]*x1);
+
+
+  }
+
+ if(Kernel*100<theta*100){
+   printf("%d\t%d\n",x0,x1);
+  
+
+  }
 
 }
