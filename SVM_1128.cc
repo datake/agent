@@ -50,7 +50,7 @@ int main (int argc, char *const argv[]) {
 	  double y[100];
 	 */
 	//cout << "ifstream" << endl;
-	ifstream ifs("sample_circle.dat");
+	ifstream ifs("sample_linear.dat");
 	string str;
 
 	if(ifs.fail()) {
@@ -263,12 +263,14 @@ int main (int argc, char *const argv[]) {
 	//カーネルトリックなしのときの境界の式（一次式）
 	//cout<<weight[0]<<"x+"<<weight[1]<<"y="<<theta<<endl;
 
+	//多項式カーネルを用いたときの境界の式
+
 
 	//Kernel(w,x)=thetaとなるときが境界となる
 	cout<<"ガウスカーネルを使ったときの境界の式"<<endl;
 	cout<<"exp(-("<<weight[0]<<"-x)**2-("<<weight[1]<<"-y)**2/2.0/"<<sigma<<"/"<<sigma<<")="<<theta<<endl;
 
-
+	
 
 	/*
 	//gnuplotで描画できる2点書き出し
