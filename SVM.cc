@@ -6,7 +6,7 @@
 #include <cmath>
 #define DATA_NUM 100
 #define sigma 10.0
-#define FILENAME "sample_linear.dat"
+#define FILENAME "./data/sample_circle.dat"
 using namespace std;
 
 //構造体宣言
@@ -22,7 +22,7 @@ struct Dataset{
 double norm(double x_i_0,double x_i_1,double x_j_0,double x_j_1);
 double PolinomicalKernel(double x_i_0,double x_i_1,double x_j_0,double x_j_1);
 int read_data(Dataset*  data);
-void print_alpha(double alpha[MATRIX_DIM],int alpha_max_number);
+void print_alpha(double alpha[MATRIX_DIM],int *alpha_max_number);
 //int print_theta()
 void print_theta(string argv1,int alpha_max_number,Dataset* data, double weight[2],double Kernel);
 void  f(string argv1,double weight[2],int x0,int x1,double theta);
@@ -199,8 +199,9 @@ int main (int argc, char *const argv[]) {
     throw;
   }
 
+
   //alphaを出力
-  print_alpha(alpha, alpha_max_number);
+  print_alpha(alpha,& alpha_max_number);
   //重みweight出力  
   
   for(i=0;i<n;i++){
@@ -273,13 +274,15 @@ int read_data(Dataset* data) {
 
   return 0;
 }
-void print_alpha(double alpha[MATRIX_DIM],int alpha_max_number){
+void print_alpha(double alpha[MATRIX_DIM],int *alpha_max_number){
   int i=0;
   //出力
   cout<<"alpha"<<endl;
   for ( i = 0; i <DATA_NUM; i++){
-    if(alpha[i]>alpha[alpha_max_number]){
-      alpha_max_number=i;
+    // cout<<"alpha[i]:"<<alpha[i]<<"alpha[alpha_max_number]:"<<alpha[alpha_max_number]<<endl;
+    if(alpha[i]*10>alpha[*alpha_max_number]*10){
+      (*alpha_max_number)=i;
+      // cout<<"alpha_max_number"<<*alpha_max_number<<endl;
     }
     printf("%d\t%f\n", i, alpha[i]);//alphaは浮動小数点型で出力
 
@@ -294,7 +297,7 @@ void print_theta(string argv1,int alpha_max_number,Dataset* data, double weight[
 
 
   //alpha_max_numberはalphaが最大の番号
-  // cout<<"alpha_max_number"<<alpha_max_number<<endl;
+   cout<<"alpha_max_number:"<<alpha_max_number<<endl;
   if(argv1=="P"){
    
     Kernel=PolinomicalKernel(weight[0],weight[1],data[alpha_max_number].input_first,data[alpha_max_number].input_second);
