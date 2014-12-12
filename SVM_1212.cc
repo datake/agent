@@ -4,22 +4,19 @@
 #include<stdlib.h>
 #include "QuadProg++.hh"
 #include <cmath>
-#include  <math.h>
 #define DATA_NUM 100
-#define BLOCK_NUM 3
 #define sigma 10.0
 #define FILENAME "./data/sample_circle.dat"
 using namespace std;
 
 //構造体宣言
-
+double GaussianKernel(double x_i_0,double x_i_1,double x_j_0,double x_j_1);
 struct Dataset{
   double input_first,input_second,y;
 
 };
 
 //プロトタイプ宣言
-double GaussianKernel(double x_i_0,double x_i_1,double x_j_0,double x_j_1);
 //int read_data(Dataset*  data);
 //２点間の距離を出力する関数。Gaussカーネルで利用
 double norm(double x_i_0,double x_i_1,double x_j_0,double x_j_1);
@@ -29,26 +26,6 @@ void print_alpha(double alpha[MATRIX_DIM],int *alpha_max_number);
 //int print_theta()
 void print_theta(string argv1,int alpha_max_number,Dataset* data, double weight[2],double Kernel);
 void  f(string argv1,double weight[2],int x0,int x1,double theta);
-void MakeFold();
-
-//クラス宣言
-class fold{
-public:
-  double x_0[DATA_NUM/BLOCK_NUM];
-  double x_1[DATA_NUM/BLOCK_NUM];
-  double y[DATA_NUM/BLOCK_NUM];
-  //メソッド
-  void set_x_0(int array_num,double n){x_0[array_num]=n;}
-  void set_x_1(int array_num,double n){x_1[array_num]=n;}
-  void set_y(int array_num,double n){y[array_num]=n;}
-
-  double get_x_0 (int array_num){return x_0[array_num];}
-  double get_x_1  (int array_num){return x_1[array_num];}
-  double get_y  (int array_num){return y[array_num];}
-};
-
-
-
 
 
 
@@ -61,6 +38,9 @@ int main (int argc, char *const argv[]) {
  
 
   int n,m,alpha_max_number=1,x0,x1;	
+
+  
+
   int i=0;
   double Kernel;
   n = DATA_NUM;
@@ -69,110 +49,28 @@ int main (int argc, char *const argv[]) {
   struct Dataset data[DATA_NUM];
  
   read_data(data);
-  
-
-
-
-
-
-
-/*  const int data_element_count=sizeof data/sizeof data[0];
-  //cout<<"sizeof(data)"<<sizeof data<<"sizeof data[0]"<<sizeof data[0]<<endl;*/
-//cout<<"dataの要素数:"<<DATA_NUM<<endl;
-//cout<<BLOCK_NUM<<"こずつに分解します"<<endl;
-  //交差検定は10回学習させる
-  /*
-    データを１０ブロックに分割して１０このでーたセットを作成
-    test１つとtrain９つに分割
-  */
-
-  //クラスのインスタンス作成
-
-  //  fold  fold1,fold2,fold3,fold4,fold5,fold6,fold7,fold8, fold9,fold10;
-  
-  //BLOCK_NUMこのブロックにランダムに分割する
-  fold fold1;
-  fold fold_obj[BLOCK_NUM]; 
-  for ( i = 0; i <DATA_NUM; i++){
- 
-    //  fold fold_obj[i].x_0=;
-  }  
-  /*
-  
-  //セット
-  fold1.set_x_0(0,1);
-  fold1.set_x_1(0,-1);
-  fold1.set_y(0,1);
-
-  //ゲット
-  cout<<fold1.get_x_0(0)<<endl;
-  cout<<fold1.get_x_1(0)<<endl;
-  cout<<fold1.get_y(0)<<endl;
-  
-  */
-
-  /*
-  for ( i = 0; i <DATA_NUM; i++){
-    fold1.set_x_0(i,data[i].input_first);
-    fold1.set_x_1(i,data[i].input_second);
-    fold1.set_y(i,data[i].y);
-    cout<<fold1.get_x_0(i)<<","<<fold1.get_x_1(i)<<","<<fold1.get_y(i)<<endl;
-
-
-    }*/
-  //fold_obj[0]からfold_obj[9]の１０つのブロックに分割
-  //それぞれのブロックには１０つずつ値が入る
-  /*
-  fold_obj[0]にはdata[X|Xは１０の倍数]
-  fold_obj[1]にはdata[X|Xは１０の倍数+1]
-  fold_obj[2]にはdata[X|Xは１０の倍数+2]
-    ...
-  fold_obj[9]にはdata[X|Xは１０の倍数+9]
-  */
-
-  //たとえばfold_obj[0]からfold_obj[2]の３つのブロックにわけるには
-  //それぞれのブロックには33か34こずつ値が入る
-
-  //方法１
-  //fold_obj[0]にdata[0]からdata[33]まで
-  //fold_obj[1]にdata[34]からdata[66]まで
-  //fold_obj[2]にdata[67]からdata[100]まで
-  
-
-  //方法２←こちらを採用
-  //fold_obj[0]にはdata[X|Xは３の倍数]
-  //fold_obj[1]にはdata[X|Xは３の倍数+1]
-  //fold_obj[2]にはdata[X|Xは３の倍数+2]
-  
-
-  
- for ( i = 0; i <DATA_NUM; i++){
-    for(int j=0;j<BLOCK_NUM ;j++){//i%jでj=0にならないように注意
-      //iをjでわった剰余(i%BLOCK_NUM)のグループ(fold_obj[(i%BLOCK_NUM)])に分類される
-      // cout <<"i:"<<i<<",j:"<<j<<",i%j:"<<i%j<<endl;
-
-
-      //あるiにたいして、セットするのは１回のみ
-      if(j==(i%BLOCK_NUM)){
-
-	fold_obj[i%BLOCK_NUM].set_x_0(floor(i/BLOCK_NUM),data[i].input_first);
-	fold_obj[i%BLOCK_NUM].set_x_1(floor(i/BLOCK_NUM),data[i].input_second);
-	fold_obj[i%BLOCK_NUM].set_y(floor(i/BLOCK_NUM),data[i].y);
-	//cout <<"i:"<<i<<",j:"<<j<<",fold_obj["<<j<<"]に、fold_obj["<<j<<"].x_0["<<floor(i/BLOCK_NUM)<<"]:"<<fold_obj[j].get_x_0(floor(i/BLOCK_NUM))<<",fold_obj["<<j<<"].x_1["<<floor(i/BLOCK_NUM)<<"]:"<<fold_obj[j].get_x_1(floor(i/BLOCK_NUM))<<",fold_obj["<<j<<"].y["<<floor(i/BLOCK_NUM)<<"]:"<<fold_obj[j].get_y(floor(i/BLOCK_NUM))<<"が代入された"<<endl;
-      }
-    }
-
-  }
-
-
-
-
-
-
 
   {
     {
-     
+      /*
+	Gの(i,j)要素はy_i*y_j*(x_i,x_j)
+	(x_i,x_j)=(1+x_i*x_j)^2=((x[i][0] ,x[i][1] ),(x[j][0],x[j][1]))
+
+
+	(6 37)はx1ベクトル 
+	(48 27) はx2ベクトル
+	..
+
+	-1はy1ベクトル
+	-1はy2ベクトル
+
+	x[i][0]=data[i].input_first;
+	x[i][1]=data[i].input_second;
+	y[i]=data[i].y;
+	//G[i][j]=y_i*y_j*(x_i,x_j)
+	//(x_i,x_j)=(1+x_i*x_j)^2
+
+	*/
       for (int i = 0; i < n; i++){	
 	//0のクラス出力
 	if(data[i].y==-1){
@@ -303,7 +201,7 @@ int main (int argc, char *const argv[]) {
 
 
   //alphaを出力
-  //print_alpha(alpha,& alpha_max_number);
+  print_alpha(alpha,& alpha_max_number);
   //重みweight出力  
   
   for(i=0;i<n;i++){
@@ -364,7 +262,7 @@ int read_data(Dataset* data) {
   }
 
   while(getline(ifs, str)) {
-    if(i==DATA_NUM) break;
+    if(i==100) break;
     data[i].input_first=0; data[i].input_second=0; data[i].y=0;
 
     sscanf(str.data(), "%lf %lf %lf", &data[i].input_first, &data[i].input_second, &data[i].y);
@@ -449,7 +347,3 @@ void  f(string argv1,double weight[2],int x0,int x1,double theta){
   }
 
 }
-
-
-
-
