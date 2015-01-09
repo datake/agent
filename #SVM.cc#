@@ -9,8 +9,6 @@
 
 
 #define DATA_NUM 100
-//#define BLOCK_NUM 10
-//#define sigma 10.0
 #define FILENAME "./data/sample_linear.dat"
 using namespace std;
 
@@ -34,9 +32,8 @@ double PolinomicalKernel(double x_i_0,double x_i_1,double x_j_0,double x_j_1);
 int read_data(Dataset*  data);
 void set_max_alpha(double alpha[MATRIX_DIM],int *alpha_max_number);
 void set_theta(string argv1,int alpha_max_number,Dataset* data, double weight[2],double Kernel);
-double  f(string argv1,double weight[2],int x0,int x1,double theta);
+//double  f(string argv1,double weight[2],int x0,int x1,double theta);
 
-void MakeFold();
 //交差検定を行う関数
 double cross_validation(Dataset* data,string argv1);
 
