@@ -81,7 +81,7 @@ int main(int argc, char *argv[]){
 
   printf("ここでサーバーからPLEASE INPUT YOUR NAMEと表示される.名前を入力してエンター");
   
-  int i=0;
+  int i=0,j=0,k=0,l=0;
   
   fgets(buf, BUF_LEN, stdin);
   printf("名前送信された。全てのクライアントが入力し終わる同時にyour id:とクライアント数,商品数表示される\n");
@@ -135,12 +135,12 @@ int main(int argc, char *argv[]){
 
   for (i=0;i<goods_num;i++){
     buf[i] = '1';
-    printf("buf[%d]=%d",i,buf[i]);
+    //printf("buf[%d]=%d",i,buf[i]);
   }
   buf[i] = '\n';
-  printf("buf[%d]=%d",i,buf[i]);
+ // printf("buf[%d]=%d",i,buf[i]);
   buf[i+1] = '\0';
-  printf("buf[%d]=%d",i+1,buf[i+1]);
+ // printf("buf[%d]=%d",i+1,buf[i+1]);
   printf("最初の自動入札（全てに1=入札）");
   
   write(s, buf, strlen(buf));//ソケットにつながるsにbufをstrlenバイト書き込む
@@ -148,7 +148,7 @@ int main(int argc, char *argv[]){
   read_size = read(s, buf, BUF_LEN);
   if ( read_size > 0 ){
     write(1, buf, 
-	  read_size);
+     read_size);
   }
 
   printf("最初の入札として全てに１が入力された。");
@@ -157,54 +157,53 @@ int main(int argc, char *argv[]){
 
 
   // ファイル出力ストリームの初期化
-  std::ofstream ofs("goods_price.dat");
-  std::ofstream ofs2("client_log.dat");
+  std::ofstream ofs("goods_price_log.dat",std::ios::app);
+  std::ofstream ofs2("client_log.dat",std::ios::app);
+  std::ofstream ofs3("g1_g2_tender.dat",std::ios::app);
+  std::vector  <int>  goods_price_vector;
+  std::vector <int>  client_log_vector;
+  int loop_count=0;
   while (1) {
-    printf("0から４まですきな数字を入力");
+    //printf("0から４まですきな数字を入力");
     //入札情報を登録
     char str[256];
-    fgets(str, 256, stdin);
-    printf("入力されたものは:%s\n",str);
+    //fgets(str, 256, stdin);
+    //printf("入力されたものは:%s\n",str);
 
-    int version = atoi(str );
-    printf( "version=%d" , version );
-   
-    for (int i=0;i<goods_num;i++){
-      
-      if(i%4==version){
-	buf[i] = '0';
-
-      }else if(i%4==version){
-	buf[i] = '1';
-      }else{
-       	buf[i] = '1';
-      }
-      printf("buf[%d]=%d",i,buf[i]);
-    }
-    buf[i] = '\n';
-    printf("buf[%d]=%d",i,buf[i]);
-    buf[i+1] = '\0';
-    printf("buf[%d]=%d",i+1,buf[i+1]);
-   
-
-    write(s, buf, strlen(buf));
+   // int version = atoi(str);
+    //printf( "version=%d" , version );
     
-    
+    for (j=0;j<goods_num;j++){
+     buf[j] = '1';
+     
+    //printf("buf[%d]=%d",i,buf[i]);
+   }
+   buf[j] = '\n';
+  //printf("buf[%d]=%d",i,buf[i]);
+   buf[j+1] = '\0';
+  //printf("buf[%d]=%d",i+1,buf[i+1]);
+
+
+   write(s, buf, strlen(buf));
+
+
     //char key_g[256];
     //char goods_price[256];
-    std::vector <int> goods_price_vector,client_log_vector;
-    std::string tmp_buffer,tmp_goods_price,tmp_client_log,tmp_client_goods_log;
-    int goods_price_int;
+  // std::vector  <int>  goods_price_vector;
+   //std::vector <int>  client_log_vector;
+
+   std::string tmp_buffer,tmp_buffer2,tmp_goods_price,tmp_client_log,tmp_client_goods_log;
+   int goods_price_int;
     //サーバーからの情報をファイルに出力する。
-    read_size = read(s, buf, BUF_LEN);
-    if ( read_size > 0 ){
-      write(1, buf, read_size);
-      buf[read_size] = '\0';
-      cout<<"buf:"<<buf<<endl;
+   read_size = read(s, buf, BUF_LEN);
+   if ( read_size > 0 ){
+    write(1, buf, read_size);
+    buf[read_size] = '\0';
+    cout<<"buf:"<<buf<<endl;
       //buffにはg1:3 g2:1 g3:1 g4:2 g5:3 g6:1 g7:1 g8:2 g9:3 g10:1 
     
-      tmp_buffer=buf;
-      for (i=0;i<goods_num;i++){
+    tmp_buffer=buf;
+    for (k=0;k<goods_num;k++){
 	//	cout<<"tmp_buffer:"<<tmp_buffer<<endl;
 	int colon_loc=tmp_buffer.find(":",0);//コロンの位置 
 	//cout <<"colon_loc:"<<colon_loc<<endl;
@@ -216,53 +215,78 @@ int main(int argc, char *argv[]){
 	//cout<<"tmp_buffer:"<<tmp_buffer<<endl;
 	//ファイルに商品の値段データを書き込み
 	//毎回毎回改行されてしまっている
-	ofs << atoi(tmp_goods_price.c_str())<<std::endl;
-      }
-    }
-   
-    
+	ofs << atoi(tmp_goods_price.c_str());
+}
+}
+ofs<<endl;
+
+
     //サーバーからの情報を読み取り
-    read_size = read(s, buf, BUF_LEN);
- 
-    if ( read_size > 0 ){
-      write(1, buf, read_size);
-      buf[read_size] = '\0';
-      cout<<"buf:"<<buf<<endl;
+read_size = read(s, buf, BUF_LEN);
+
+if ( read_size > 0 ){
+  write(1, buf, read_size);
+  buf[read_size] = '\0';
+  cout<<"buf:"<<buf<<endl;
       //buffにはg1:1 g2:1 g3:1 g4:1 g5:1 g6:1 g7:1 g8:1 g9:1 g10:1 a1:1101110111 a2:1110111011
       //a1:???,a2:???を認識
-    
-      tmp_buffer=buf;
+
+  tmp_buffer2=buf;
       //bufの前半のgの情報はけずる。
-      int a_loc=tmp_buffer.find("a",0);//aの位置 
-      tmp_buffer=tmp_buffer.substr(a_loc);//a以降の文字列
+      int a_loc=tmp_buffer2.find("a",0);//aの位置 
+      tmp_buffer2=tmp_buffer2.substr(a_loc);//a以降の文字列
       //tmp_bufferは a1:1101110111 a2:1110111011　..
       for (i=0;i<client_num;i++){
-     
-	cout<<"tmp_buffer:"<<tmp_buffer<<endl;
-	int colon_loc=tmp_buffer.find(":",0);//コロンの位置 
-	cout <<"colon_loc:"<<colon_loc<<endl;
-	tmp_client_log=tmp_buffer.substr(colon_loc+1,goods_num); //コロンの次の数字(goods_num桁)はそれぞれのクライアントの入札データ
-	cout<<"tmp_client_log:a["<<i<<"]:"<<tmp_client_log<<endl;//ex tmp_client_log:a[0]:1101110111
 
-	
-	for (int j=0;j<goods_num;j++){//一人のクライアントのそれぞれの商品に対する入札をよむ
-	  tmp_client_goods_log=tmp_client_log.substr(j,1);//a[i]のクライアントのj番目の商品に対する入札データ (0 or 1)
-	  client_log_vector.push_back(atoi(tmp_client_goods_log.c_str()));//クライアント入札データの追加
-	  //ofs2ファイルにクライアントiの商品jの入札データを書き込み
-	  //毎回毎回改行されてしまっている
-	  //最初の１回の入札情報がとれてない。
-	  ofs2 << atoi(tmp_client_goods_log.c_str())<<std::endl;
-	}
-	 tmp_buffer=tmp_buffer.substr(colon_loc+1);//コロン以降の文字列
-	
-      }
-    }    printf("ここで次の入力待ち");
-  }
+             //  cout<<"tmp_buffer:"<<tmp_buffer<<endl;
+        	int colon_loc2=tmp_buffer2.find(":",0);//コロンの位置 
+        	//cout <<"colon_loc:"<<colon_loc<<endl;
+        	tmp_client_log=tmp_buffer2.substr(colon_loc2+1,goods_num); //コロンの次の数字(goods_num桁)はそれぞれのクライアントの入札データ
+        	//cout<<"tmp_client_log:a["<<i<<"]:"<<tmp_client_log<<endl;//ex tmp_client_log:a[0]:1101110111
+
+        	
+        	for (int j=0;j<goods_num;j++){//一人のクライアントのそれぞれの商品に対する入札をよむ
+        	  tmp_client_goods_log=tmp_client_log.substr(j,1);//a[i]のクライアントのj番目の商品に対する入札データ (0 or 1)
+        	  client_log_vector.push_back(atoi(tmp_client_goods_log.c_str()));//クライアント入札データの追加
+        	  //ofs2ファイルにクライアントiの商品jの入札データを書き込み
+        	  //毎回毎回改行されてしまっている
+        	  //最初の１回の入札情報がとれてない。
+        	  ofs2 << atoi(tmp_client_goods_log.c_str());
+        	}
+        	 tmp_buffer2=tmp_buffer2.substr(colon_loc2+1);//コロン以降の文字列
+
+         }
+       }
+       ofs2<<endl;
+       printf("ここで次の入力待ち");
+       loop_count++;
+     }//end while
+
+//(g1_price,g2_price,1_-1)g1とg2の値段の組あわせがあり、a1がg1に対して入札を行うかを判断したデータ
+     for (int r= 0; r < goods_num;r++) {
+     //   for (int s = 0; s < goods_num;s++) {
+
+      //ofs3 << "price:"<<goods_price_vector[r]<< " ";
+      //cout << "price:"<<goods_price_vector[r]<< " ";
+
+    }
+
+    for (int r= 0; r < client_num;r++) {
+     //ofs3 <<"client" <<client_log_vector[r]<< " ";
+     //cout<<"client" <<client_log_vector[r]<< " ";
+   }
+
+   ofs3 << std::endl;
+     // }
 
 
 
 
-  close(s);
 
-  return 0;
-}
+
+
+
+   close(s);
+
+   return 0;
+ }
