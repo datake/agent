@@ -12,6 +12,8 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <sstream>
+#include    <iomanip>
 using namespace std;
 
 #define BUF_LEN 1024                      // バッファのサイズ 
@@ -19,7 +21,7 @@ using namespace std;
 int main(int argc, char *argv[]){
   int s;  /* ソケットのためのファイルディスクリプタ */
   int client_id;
-  size_t goods_num,client_num;
+  int goods_num,client_num;
   struct hostent *servhost;            // ホスト名と IP アドレスを扱うための構造体 
   struct sockaddr_in server;           // ソケットを扱うための構造体 
   struct servent *service;             // サービス (http など) を扱うための構造体 
@@ -118,8 +120,8 @@ int main(int argc, char *argv[]){
   if (read_size > 0)
     write(1, buf, read_size);
   buf[read_size] = '\0';
-  sscanf(buf, "%zu%*[^0-9]%zu", &goods_num, &client_num);//%*[^0-9]は数字が始まるまで読み飛ばす
-  printf("got goods_num:%zu,client_num:%zu\n",goods_num,client_num);
+  sscanf(buf, "%d%*[^0-9]%d", &goods_num, &client_num);//%*[^0-9]は数字が始まるまで読み飛ばす
+  printf("got goods_num:%d,client_num:%d\n",goods_num,client_num);
   
 
 
@@ -163,6 +165,9 @@ int main(int argc, char *argv[]){
   std::vector  <int>  goods_price_vector;
   std::vector <int>  client_log_vector;
   int loop_count=0;
+
+  
+
   while (1) {
     //printf("0から４まですきな数字を入力");
     //入札情報を登録
@@ -199,9 +204,11 @@ int main(int argc, char *argv[]){
    if ( read_size > 0 ){
     write(1, buf, read_size);
     buf[read_size] = '\0';
+
     cout<<"buf:"<<buf<<endl;
       //buffにはg1:3 g2:1 g3:1 g4:2 g5:3 g6:1 g7:1 g8:2 g9:3 g10:1 
-    
+   // if (buf==("end")) break;
+    if (std::string(buf).find("end") != std::string::npos) break;
     tmp_buffer=buf;
     for (k=0;k<goods_num;k++){
 	//	cout<<"tmp_buffer:"<<tmp_buffer<<endl;
@@ -214,7 +221,6 @@ int main(int argc, char *argv[]){
 	tmp_buffer=tmp_buffer.substr(colon_loc+1);//コロン以降の文字列
 	//cout<<"tmp_buffer:"<<tmp_buffer<<endl;
 	//ファイルに商品の値段データを書き込み
-	//毎回毎回改行されてしまっている
 	ofs << atoi(tmp_goods_price.c_str());
 }
 }
@@ -228,6 +234,8 @@ if ( read_size > 0 ){
   write(1, buf, read_size);
   buf[read_size] = '\0';
   cout<<"buf:"<<buf<<endl;
+ // if (buf=="end") break;
+  if (std::string(buf).find("end") != std::string::npos) break;
       //buffにはg1:1 g2:1 g3:1 g4:1 g5:1 g6:1 g7:1 g8:1 g9:1 g10:1 a1:1101110111 a2:1110111011
       //a1:???,a2:???を認識
 
@@ -269,15 +277,42 @@ if ( read_size > 0 ){
       //ofs3 << "price:"<<goods_price_vector[r]<< " ";
       //cout << "price:"<<goods_price_vector[r]<< " ";
 
-    }
+     }
 
-    for (int r= 0; r < client_num;r++) {
+     for (int r= 0; r < client_num;r++) {
      //ofs3 <<"client" <<client_log_vector[r]<< " ";
      //cout<<"client" <<client_log_vector[r]<< " ";
-   }
+     }
 
-   ofs3 << std::endl;
-     // }
+           //出力先ファイルの作成(SVMで読み込む)
+     for(int temp_loop =0;temp_loop<loop_count;temp_loop++){
+        for(int temp_client =0;temp_client<client_num;temp_client++){
+            for(int temp_goods=0;temp_goods<goods_num;temp_goods++){
+            std::stringstream ss;
+            ss << "output_goods" << temp_goods+1 <<"_client" <<temp_client+1<<".dat";
+            cout << "output" << temp_goods+1 <<"_" <<temp_client+1<<".dat"<<endl;
+
+              std::string result_outputfile =ss.str();//.str() でstring型の値を得る
+              std::ofstream ofs4(result_outputfile.c_str(),std::ios::app);
+              //商品tempの値段  １or-1
+              ofs4 <<goods_price_vector[temp_loop*goods_num+temp_goods] <<" "<<client_log_vector[temp_goods+temp_client*goods_num+client_num*goods_num*temp_loop]<<endl;
+
+              cout<<temp_loop*goods_num+temp_goods<<":"<<goods_price_vector[temp_loop*goods_num+temp_goods] <<"&"<<temp_goods+temp_client*goods_num+client_num*goods_num*temp_loop<<":"<<client_log_vector[temp_goods+temp_client*goods_num+client_num*goods_num*temp_loop]<<endl;
+          }
+        }
+      }
+
+      cout<<"test"<<endl;
+      for (int test_int=0;test_int<10;test_int++){
+
+        //cout<<goods_price_vector[test_int]<<"&"<<client_log_vector[test_int]<<endl;
+
+      }
+
+      // ofs4 << std::endl;
+
+
+      ofs3 << std::endl;
 
 
 
@@ -286,7 +321,8 @@ if ( read_size > 0 ){
 
 
 
-   close(s);
 
-   return 0;
- }
+      close(s);
+
+      return 0;
+    }
