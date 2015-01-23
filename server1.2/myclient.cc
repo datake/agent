@@ -156,8 +156,6 @@ int main(int argc, char *argv[]){
   printf("最初の入札として全てに１が入力された。");
   // 送受信ループ 
   // 標準入力をそのまま送信、入札結果と価格を受信して表示 
-
-
   // ファイル出力ストリームの初期化
   std::ofstream ofs("goods_price_log.dat",std::ios::app);
   std::ofstream ofs2("client_log.dat",std::ios::app);
