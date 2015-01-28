@@ -24,9 +24,11 @@ Aホテルへの最高入札額を調べる．$79とする．
 よって，両方の商品に入札し，Aホテルと野球の付け値がそれぞれ$100,$70を越えれば，オークションから降りる．
 
 
-/kadai4_goods_client_log
-client_log.dat	
-goods_price_log.dat 
+/kadai4_goods_client_logのファイルのデータについて
+client_log.dat:クライアント全員分の商品に対して入札したかどうかのデータ
+goods_price_log.dat: 各商品の値段の推移データ
+
+goods：1or 2に対して、client:1or2の値段と入札するかどうか(0,1)がかかれてあるデータ
 
 output_goods1_client1.dat	output_goods2_client1.dat
 output_goods1_client2.dat	output_goods2_client2.dat

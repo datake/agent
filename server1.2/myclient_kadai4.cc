@@ -172,8 +172,8 @@ int main(int argc, char *argv[]){
   // 送受信ループ 
   // 標準入力をそのまま送信、入札結果と価格を受信して表示 
   // ファイル出力ストリームの初期化
-  std::ofstream ofs("goods_price_log.dat",std::ios::app);
-  std::ofstream ofs2("client_log.dat",std::ios::app);
+  std::ofstream ofs("./kadai4_goods_client_log/goods_price_log.dat",std::ios::app);
+  std::ofstream ofs2("./kadai4_goods_client_log/client_log.dat",std::ios::app);
  //std::ofstream ofs_("goods_price_log.dat",std::ios::app);
   std::vector  <int>  goods_price_vector;
   std::vector <int>  client_log_vector;
@@ -208,8 +208,9 @@ int main(int argc, char *argv[]){
       tmp_buffer=buf;
       for (k=0;k<goods_num;k++){
         int colon_loc=tmp_buffer.find(":",0);//colon_loc:コロンの位置 	
-        tmp_goods_price=tmp_buffer.substr(colon_loc+1,1); //コロンの次の数字（商品の値段）
-        //cout<<"tmp_goods_price商品の値段g["<<i<<"]:"<<tmp_goods_price<<endl;
+        //find()関数:現在の文字列のインデックス 番目の文字から検索を開始し、最初に文字列 が現れた場所を返す
+        tmp_goods_price=tmp_buffer.substr(colon_loc+1,2); //コロンの次2桁の数字（商品の値段）
+        // cout<<"tmp_goods_price商品の値段g["<<i<<"]:"<<tmp_goods_price<<endl;
         goods_price_vector.push_back(atoi(tmp_goods_price.c_str()));//商品の値段データの追加
         tmp_buffer=tmp_buffer.substr(colon_loc+1);//コロン以降の文字列
         //cout<<"tmp_buffer:"<<tmp_buffer<<endl;
@@ -255,16 +256,20 @@ int main(int argc, char *argv[]){
     ofs2<<endl;
     printf("ここで次の入力待ち");
     loop_count++;
+    cout<<"loop_count:"<<loop_count<<endl;
   }//end while
 
   //(g1_price,g2_price,1_-1)g1とg2の値段の組あわせがあり、a1がg1に対して入札を行うかを判断したデータ
 
   //出力先ファイルの作成(SVMで読み込む)
   for(int temp_loop =0;temp_loop<loop_count;temp_loop++){
+    cout<<"temp_loop++:"<<temp_loop<<endl;
     for(int temp_client =0;temp_client<client_num;temp_client++){
+       cout<<"temp_client++:"<<temp_client<<endl;
       for(int temp_goods=0;temp_goods<goods_num;temp_goods++){
+         cout<<"temp_goods++:"<<temp_goods<<endl;
         std::stringstream ss;
-        ss << "output_goods" << temp_goods+1 <<"_client" <<temp_client+1<<".dat";
+        ss << "./kadai4_goods_client_log/output_goods" << temp_goods+1 <<"_client" <<temp_client+1<<".dat";
         cout << "output" << temp_goods+1 <<"_" <<temp_client+1<<".dat"<<endl;
 
         std::string result_outputfile =ss.str();//.str() でstring型の値を得る
@@ -275,7 +280,8 @@ int main(int argc, char *argv[]){
         cout<<temp_loop*goods_num+temp_goods<<":"<<goods_price_vector[temp_loop*goods_num+temp_goods] <<"&"<<temp_goods+temp_client*goods_num+client_num*goods_num*temp_loop<<":"<<client_log_vector[temp_goods+temp_client*goods_num+client_num*goods_num*temp_loop]<<endl;
       }
     }
+  
+  }
   close(s);
   return 0;
-  }
 }
