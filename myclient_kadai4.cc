@@ -58,8 +58,9 @@ double G[MATRIX_DIM][MATRIX_DIM], g0[MATRIX_DIM],
 
 
 
-  
-  double weight[2],theta;
+
+  double weight[2];
+  double theta;
 
 
 
@@ -76,12 +77,8 @@ double G[MATRIX_DIM][MATRIX_DIM], g0[MATRIX_DIM],
 
 
 
-
-  int m=0;
-  int alpha_max_number=1; 
-  int i=0;
   double Kernel;
-  int n = DATA_NUM;
+ 
  // string argv1='G';
 
   struct Dataset data[DATA_NUM];
@@ -178,7 +175,7 @@ int main(int argc, char *argv[]){
   vector<int> eval_val_vector;//評価値が順番に2^n-1こ入っている。
 
   if(ifs.fail()) {
-    cerr << "File do not exist.\n";
+    cerr << "File EVAL_VALUE_FILE"<<EVAL_VALUE_FILE<<"do not exist.\n";
     exit(0);
   }
 
@@ -387,6 +384,11 @@ int main(int argc, char *argv[]){
 SVM::SVM(){
 
 
+
+  int m=0;
+  int alpha_max_number=1; 
+  int i=0;
+   int n = DATA_NUM;
 /*
  double G[MATRIX_DIM][MATRIX_DIM], g0[MATRIX_DIM], 
   CE[MATRIX_DIM][MATRIX_DIM], ce0[MATRIX_DIM], 
@@ -405,13 +407,14 @@ SVM::SVM(){
   for(int temp_client =0;temp_client<CLIENT_NUM;temp_client++){
     for(int temp_goods=0;temp_goods<GOODS_NUM;temp_goods++){
       std::stringstream ss;
-      ss << "server1.2/output_goods" << temp_goods+1 <<"_client" <<temp_client+1<<".dat";
+     // ss << "server1.2/output_goods" << temp_goods+1 <<"_client" <<temp_client+1<<".dat";
+       ss << "output_goods" << temp_goods+1 <<"_client" <<temp_client+1<<".dat";
          std::string result_outputfile =ss.str();//.str() でstring型の値を得る
          cout<<"LOADED FILE:"<<result_outputfile<<endl;
          std::ifstream ifs(result_outputfile.c_str(),std::ios::app);
          string str="";
          if(ifs.fail()) {
-          cout<<"File do not exist.\n"<<endl;
+          cout<<"File output_goods_client_.dat do not exist.\n"<<endl;
           cerr << "File do not exist.\n";
           exit(0);
           
