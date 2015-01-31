@@ -16,7 +16,7 @@
 #include <iomanip>
 #include "QuadProg++.hh"
 #define BUF_LEN 1024                      // バッファのサイズ 
-#define EVAL_VALUE_FILE "./kadai4_data/2client-2goods-1.dat"
+#define EVAL_VALUE_FILE "./kadai4_data/2client-2goods-2.dat"
 #define LOG_FILE "./kadai4_data/output_goods1_client1.dat"
 //for SVM
 #define sigma 7
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
   //char host[BUF_LEN] = "127.0.0.1";    // 接続するホスト名 
   char path[BUF_LEN] = "/";              // 要求するパス 
   unsigned short port = 5000;            // 接続するポート番号 
-  string string_myname="kadai4_client_name";//クライアント名
+  string string_myname="kadai4_weak";//クライアント名
   string str;
   std::vector<int> eval_val_vector;//評価値が順番に2^n-1こ入っている。
   std::vector<int>  goods_price_vector;
@@ -240,7 +240,7 @@ int main(int argc, char *argv[]){
          break;
       tmp_buffer=buf;
       for (k=0;k<goods_num;k++){
-        int colon_loc=tmp_buffer.find(":",0);//colon_loc:コロンの位置 	
+        int colon_loc=tmp_buffer.find(":",0);//colon_loc:コロンの位置   
         //find()関数:現在の文字列のインデックス 番目の文字から検索を開始し、最初に文字列 が現れた場所を返す
         tmp_goods_price=tmp_buffer.substr(colon_loc+1,2); //コロンの次2桁の数字（商品の値段）
         // cout<<"tmp_goods_price商品の値段g["<<i<<"]:"<<tmp_goods_price<<endl;
@@ -273,7 +273,7 @@ int main(int argc, char *argv[]){
       tmp_buffer2=tmp_buffer2.substr(a_loc);//a以降の文字列
       //tmp_bufferは a1:1101110111 a2:1110111011　..
       for (i=0;i<client_num;i++){
-        int colon_loc2=tmp_buffer2.find(":",0);//コロンの位置         	
+        int colon_loc2=tmp_buffer2.find(":",0);//コロンの位置           
         tmp_client_log=tmp_buffer2.substr(colon_loc2+1,goods_num); //コロンの次の数字(goods_num桁)はそれぞれのクライアントの入札データ
 
         for (int j=0;j<goods_num;j++){//一人のクライアントのそれぞれの商品に対する入札をよむ
