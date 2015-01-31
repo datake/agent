@@ -17,11 +17,11 @@
 #include "QuadProg++.hh"
 #define BUF_LEN 1024                      // バッファのサイズ 
 #define EVAL_VALUE_FILE "./kadai4_data/2client-2goods-1.dat"
-#define LOG_FILE "./kadai4_data/output_goods1_client1.dat"
+#define LOG_FILE "./kadai4_goods_client_log/output_goods1_client1.dat"
 //for SVM
 #define sigma 7
-#define CLIENT_NUM 2
-#define GOODS_NUM 3
+#define CLIENT_NUMBER 2
+#define GOODS_NUMBER 2
 #define DATA_NUM 100
 #define MATRIX_DIM 100
 using namespace std;
@@ -35,7 +35,7 @@ struct Dataset{
 int SVM();
 int client_id;
 int is_firstday=0;
-double SVM_expected_price[GOODS_NUM-1];
+long double SVM_expected_price[GOODS_NUMBER];
 
 
 int main(int argc, char *argv[]){
@@ -128,9 +128,12 @@ int main(int argc, char *argv[]){
 
   //一日目かどうかを判別するためのログファイル
   ifstream ifs_log_file(LOG_FILE);
-  if(ifs_log_file.fail()) {
+  if(!ifs_log_file){
     is_firstday=1;
     cout << "File LOG_FILE"<<LOG_FILE<<"do not exist.\nThis is a first day";
+  }else if(ifs_log_file){
+    is_firstday=0;
+    cout << "File LOG_FILE"<<LOG_FILE<<"exists!!!.\nThis is not a first day";
   }
 
   //自分の評価値をeval_val_vectorに保存
@@ -211,7 +214,7 @@ int main(int argc, char *argv[]){
           if(loop_count==0){//1回目のwhileループではgoods_price_vectorが存在しない
               buf[j] = '1';
           }else{
-            cout<<"評価値"<<eval_val_vector[j]<<",(loop_count-1)*goods_num+j:"<<(loop_count-1)*goods_num+j<<",値段:"<<goods_price_vector[(loop_count-1)*goods_num+j]<<endl;
+            cout<<"firstday!!評価値"<<eval_val_vector[j]<<",(loop_count-1)*goods_num+j:"<<(loop_count-1)*goods_num+j<<",値段:"<<goods_price_vector[(loop_count-1)*goods_num+j]<<endl;
             if(eval_val_vector[j]>goods_price_vector[(loop_count-1)*goods_num+j]){
                buf[j] = '1';
             }else{
@@ -225,7 +228,8 @@ int main(int argc, char *argv[]){
         if(loop_count==0){//1回目のwhileループではgoods_price_vectorが存在しない
               buf[j] = '1';
         }else{
-          if((eval_val_vector[j]-SVM_expected_price[j])>0){
+          cout<<"NOTfirstday!!評価値:"<<eval_val_vector[j]<<",SVM_expected_price[j+1]:"<<SVM_expected_price[j+1]<<endl;
+          if((eval_val_vector[j]-SVM_expected_price[j+1])>0){
             buf[j] = '1';
           }else{
              buf[j] = '0';
@@ -316,7 +320,7 @@ int main(int argc, char *argv[]){
       for(int temp_goods=0;temp_goods<goods_num;temp_goods++){
         std::stringstream ss;
         ss << "./kadai4_goods_client_log/output_goods" << temp_goods+1 <<"_client" <<temp_client+1<<".dat";
-        cout << "output" << temp_goods+1 <<"_" <<temp_client+1<<".dat"<<endl;
+        //cout << "output" << temp_goods+1 <<"_" <<temp_client+1<<".dat"<<endl;
         std::string result_outputfile =ss.str();//.str() でstring型の値を得る
         std::ofstream ofs4(result_outputfile.c_str(),std::ios::app);
         //商品tempの値段  １or-1
@@ -325,7 +329,7 @@ int main(int argc, char *argv[]){
         }else{//入札しない＝０のとき
           ofs4 <<goods_price_vector[temp_loop*goods_num+temp_goods] <<" -1"<<endl;
         }
-        cout<<temp_loop*goods_num+temp_goods<<":"<<goods_price_vector[temp_loop*goods_num+temp_goods] <<"&"<<temp_goods+temp_client*goods_num+client_num*goods_num*temp_loop<<":"<<client_log_vector[temp_goods+temp_client*goods_num+client_num*goods_num*temp_loop]<<endl;
+        //cout<<temp_loop*goods_num+temp_goods<<":"<<goods_price_vector[temp_loop*goods_num+temp_goods] <<"&"<<temp_goods+temp_client*goods_num+client_num*goods_num*temp_loop<<":"<<client_log_vector[temp_goods+temp_client*goods_num+client_num*goods_num*temp_loop]<<endl;
       }
     }
 
@@ -349,140 +353,141 @@ int SVM(){
   CE[MATRIX_DIM][MATRIX_DIM], ce0[MATRIX_DIM], 
   CI[MATRIX_DIM][MATRIX_DIM], ci0[MATRIX_DIM];
 
-  double Kernel;
+  long double Kernel;
   struct Dataset data[DATA_NUM];
-  double weight[2]={};
-  double theta=0;
-  double alpha[MATRIX_DIM]={};
+  long double weight[2]={};
+  long double theta=0;
+   double alpha[MATRIX_DIM]={};
   
 
 
 //ファイル読み込み
-for(int temp_client =0;temp_client<CLIENT_NUM;temp_client++){
+for(int temp_client =1;temp_client<CLIENT_NUMBER+1;temp_client++){
   //自分については評価しない
   if(temp_client== client_id){
-    break;
-  }
-
-
-  for(int temp_goods=0;temp_goods<GOODS_NUM;temp_goods++){
-    std::stringstream ss;
-    ss << "./kadai4_goods_client_log/output_goods" << temp_goods+1 <<"_client" <<temp_client+1<<".dat";
-    std::string result_outputfile =ss.str();//.str() でstring型の値を得る
-    cout<<"LOADED FILE:"<<result_outputfile<<endl;
-    std::ifstream ifs(result_outputfile.c_str(),std::ios::app);
-    string str="";
-    if(ifs.fail()) {
-      cout<<"File output_goods_client_.dat do not exist.\n"<<endl;
-      cerr << "File do not exist.\n";
-      exit(0);
-    }
- 
-    while(getline(ifs, str)) {
-      if(i==DATA_NUM){
-        cout<<"getline break"<<endl;
-        break;
+    cout<<"temp_client== client_id="<<temp_client<<endl;
+  }else {
+    cout<<"temp_client!= client_id,temp_client:"<<temp_client<<endl;
+    for(int temp_goods=1;temp_goods<GOODS_NUMBER+1;temp_goods++){
+      std::stringstream ss;
+      ss << "./kadai4_goods_client_log/output_goods" << temp_goods <<"_client" <<temp_client<<".dat";
+      std::string result_outputfile =ss.str();//.str() でstring型の値を得る
+      cout<<"LOADED FILE:"<<result_outputfile<<endl;
+      std::ifstream ifs(result_outputfile.c_str(),std::ios::app);
+      string str="";
+      if(ifs.fail()) {
+        cout<<"File output_goods_client_.dat do not exist.\n"<<endl;
+        cerr << "File do not exist.\n";
+        exit(0);
       }
-      data[i].input_first=0; data[i].input_second=0; data[i].y=0;
-      sscanf(str.data(), "%lf %lf", &data[i].input_first,  &data[i].y);
-    //printf("%lf %lf %lf", data[i].input_first, data[i].input_second, data[i].y);
-    //cout<<"data[i].input_first:"<<data[i].input_first<< ",data[i].input_second:"<< data[i].input_second<<",data[i].y:"<<data[i].y<<endl;
-      i++;
-    }
-
-    {
-      for (int i = 0; i < n; i++){  
-        for (int j = 0; j < n; j++){
-          Kernel=(data[i].input_first*data[j].input_first+data[i].input_second*data[j].input_second);
-          G[i][j] =data[i].y*data[j].y*Kernel;
-    //cout<<"G[i][j]"<<G[i][j]<<" ";
-          if(i==j) G[i][j]+=1.0e-9;
+   
+      while(getline(ifs, str)) {
+        if(i==DATA_NUM){
+          cout<<"getline break"<<endl;
+          break;
         }
-      }    
-    }
-
-
-    {//g0の要素は全て-1
-      for (int i = 0; i < n; i++){
-        g0[i] =(double) -1;
-    //  cout<<"g0["<<i<<"]="<<g0[i] <<endl;
+        data[i].input_first=0; data[i].input_second=0; data[i].y=0;
+        sscanf(str.data(), "%lf %lf", &data[i].input_first,  &data[i].y);
+      //printf("%lf %lf %lf", data[i].input_first, data[i].input_second, data[i].y);
+      //cout<<"data[i].input_first:"<<data[i].input_first<< ",data[i].input_second:"<< data[i].input_second<<",data[i].y:"<<data[i].y<<endl;
+        i++;
       }
-    }
-    m = 1;
-    {//CEは(y1 y2 .. yn)
-      for (int i = 0; i < n; i++){
-        for(int j=0;j<n;j++){
-          CE[i][0] =data[i].y;
-    //  cout<<"CE["<<i<<"]["<<j<<"]="<<CE[i][j]<<endl;
-        }
-      }
-    } 
 
-
-    {//ce0は0
-      for (int i = 0; i < n; i++){
-        ce0[i]=(double)0;
-      }
-    }
-
-    {
-
-      for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
-          if(i==j){
-            CI[i][j]=(double)1;
-            //cout<<"CI["<<i<<"]["<<j<<"]=" << CI[i][j] <<endl;
-          }else{
-            CI[i][j]=(double)0;
-            //cout<<"CI["<<i<<"]["<<j<<"]=" << CI[i][j] <<endl;
+      {
+        for (int i = 0; i < n; i++){  
+          for (int j = 0; j < n; j++){
+            Kernel=(data[i].input_first*data[j].input_first+data[i].input_second*data[j].input_second);
+            G[i][j] =data[i].y*data[j].y*Kernel;
+      //cout<<"G[i][j]"<<G[i][j]<<" ";
+            if(i==j) G[i][j]+=1.0e-9;
           }
-    }
-
-    {
-      //ci0は(0 0 0 0 0 )
-      for (int j = 0; j < n; j++){
-        ci0[j] =(double)0;
-        //cout<<"ci0["<< j<<"]="<<ci0[i] <<endl;
+        }    
       }
-    }
-    try{
-      //例外が発生する可能性のあるコード
-      solve_quadprog(G, g0,100,  CE, ce0,1, CI, ci0,100, alpha);
-    } catch (const std::exception& ex) {
-      std::cerr << "solve_quadprog_failed" << ex.what() << std::endl;
-      throw;
-    }
 
-    //出力
-    //cout<<"alpha"<<endl;
-    for ( i = 0; i <n; i++){
-    // cout<<"alpha["<<i<<"]:"<<alpha[i]<<endl;
-      if(alpha[i]>alpha[alpha_max_number]){
-        alpha_max_number=i;
+
+      {//g0の要素は全て-1
+        for (int i = 0; i < n; i++){
+          g0[i] =(double) -1;
+      //  cout<<"g0["<<i<<"]="<<g0[i] <<endl;
+        }
       }
-    //printf("%d\t%f\n", i, alpha[i]);//alphaは浮動小数点型で出力
+      m = 1;
+      {//CEは(y1 y2 .. yn)
+        for (int i = 0; i < n; i++){
+          for(int j=0;j<n;j++){
+            CE[i][0] =data[i].y;
+      //  cout<<"CE["<<i<<"]["<<j<<"]="<<CE[i][j]<<endl;
+          }
+        }
+      } 
+
+
+      {//ce0は0
+        for (int i = 0; i < n; i++){
+          ce0[i]=(double)0;
+        }
+      }
+
+      {
+
+        for (int i = 0; i < n; i++)
+          for (int j = 0; j < n; j++)
+            if(i==j){
+              CI[i][j]=(double)1;
+              //cout<<"CI["<<i<<"]["<<j<<"]=" << CI[i][j] <<endl;
+            }else{
+              CI[i][j]=(double)0;
+              //cout<<"CI["<<i<<"]["<<j<<"]=" << CI[i][j] <<endl;
+            }
+      }
+
+      {
+        //ci0は(0 0 0 0 0 )
+        for (int j = 0; j < n; j++){
+          ci0[j] =(double)0;
+          //cout<<"ci0["<< j<<"]="<<ci0[i] <<endl;
+        }
+      }
+      try{
+        //例外が発生する可能性のあるコード
+        solve_quadprog(G, g0,100,  CE, ce0,1, CI, ci0,100, alpha);
+      } catch (const std::exception& ex) {
+        std::cerr << "solve_quadprog_failed" << ex.what() << std::endl;
+        throw;
+      }
+
+      //出力
+      //cout<<"alpha"<<endl;
+      for ( i = 0; i <n; i++){
+      // cout<<"alpha["<<i<<"]:"<<alpha[i]<<endl;
+        if(alpha[i]>alpha[alpha_max_number]){
+          alpha_max_number=i;
+        }
+      //printf("%d\t%f\n", i, alpha[i]);//alphaは浮動小数点型で出力
+      }
+      //重みweight出力
+
+      for(i=0;i<n;i++){
+        weight[0]+=alpha[i]*data[i].y*data[i].input_first;
+        weight[1]+=alpha[i]*data[i].y*data[i].input_second;
+      }
+      cout<<"weight[0]="<<weight[0]<<endl;
+     // cout<<"weight[1]="<<weight[1]<<endl;
+
+      //alpha_max_numberはalphaが最大の番号
+      cout<<"alpha_max_number"<<alpha_max_number<<endl;
+      //カーネルは内積
+      Kernel=(weight[0]*data[alpha_max_number].input_first+weight[1]*data[alpha_max_number].input_second);
+
+      theta=Kernel-data[alpha_max_number].y;
+      cout<<"theta="<<theta<<endl;
+
+      //SVM_expected_priceは、商品がtemp_goodsに対する相手の予算を予想した値
+      //SVM_expected_price[1],SVM_expected_price[2]  NOT SVM_expected_price[0]
+      SVM_expected_price[temp_goods]=theta/weight[0];
+      cout<<"SVM_expected_price:["<<temp_goods<<"]:"<<SVM_expected_price[temp_goods]<<endl;
+
+      }//finish loop of one goods
     }
-    //重みweight出力
-
-    for(i=0;i<n;i++){
-      weight[0]+=alpha[i]*data[i].y*data[i].input_first;
-      weight[1]+=alpha[i]*data[i].y*data[i].input_second;
-    }
-    cout<<"weight[0]="<<weight[0]<<endl;
-   // cout<<"weight[1]="<<weight[1]<<endl;
-
-    //alpha_max_numberはalphaが最大の番号
-    //cout<<"alpha_max_number"<<alpha_max_number<<endl;
-    //カーネルは内積
-    Kernel=(weight[0]*data[alpha_max_number].input_first+weight[1]*data[alpha_max_number].input_second);
-
-    theta=Kernel-data[alpha_max_number].y;
-    cout<<"theta="<<theta<<endl;
-
-    //SVM_expected_priceは、商品がtemp_goodsに対する相手の予算を予想した値
-    SVM_expected_price[temp_goods]=theta/weight[0];
-    cout<<"SVM_expected_price:["<<temp_goods<<"]:"<<SVM_expected_price[temp_goods]<<endl;
-
-    }//finish loop of one goods
   }//finish loop of one client
 }

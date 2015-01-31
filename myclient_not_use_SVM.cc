@@ -225,11 +225,18 @@ int main(int argc, char *argv[]){
         if(loop_count==0){//1回目のwhileループではgoods_price_vectorが存在しない
               buf[j] = '1';
         }else{
-          if((eval_val_vector[j]-SVM_expected_price[j])>0){
-            buf[j] = '1';
+          //このクライアントはSVMつかわない
+          cout<<"評価値"<<eval_val_vector[j]<<",(loop_count-1)*goods_num+j:"<<(loop_count-1)*goods_num+j<<",値段:"<<goods_price_vector[(loop_count-1)*goods_num+j]<<endl;
+          if(eval_val_vector[j]>goods_price_vector[(loop_count-1)*goods_num+j]){
+             buf[j] = '1';
           }else{
              buf[j] = '0';
           }
+          /*if((eval_val_vector[j]-SVM_expected_price[j])>0){
+            buf[j] = '1';
+          }else{
+             buf[j] = '0';
+          }*/
         }
       }
     }
@@ -301,9 +308,10 @@ int main(int argc, char *argv[]){
     }
     ofs2<<endl;
     //printf("ここで次の入力待ち&SVM run");
-    if(is_firstday==0){
+    //このクライアントはSVMつかわない
+    /*if(is_firstday==0){
       SVM();
-    }
+    }*/
     loop_count++;
     cout<<"loop_count:"<<loop_count<<endl;
 
