@@ -16,7 +16,7 @@
 #include <iomanip>
 #include "QuadProg++.hh"
 #define BUF_LEN 1024                      // バッファのサイズ 
-#define EVAL_VALUE_FILE "./kadai4_data/2client-2goods-1.dat"
+#define EVAL_VALUE_FILE "./kadai4_data/2client-2goods-2.dat"
 #define LOG_FILE "./kadai4_data/output_goods1_client1.dat"
 //for SVM
 #define sigma 7
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
   //char host[BUF_LEN] = "127.0.0.1";    // 接続するホスト名 
   char path[BUF_LEN] = "/";              // 要求するパス 
   unsigned short port = 5000;            // 接続するポート番号 
-  string string_myname="kadai4_client_name";//クライアント名
+  string string_myname="kadai4_weak_client";//クライアント名
   string str;
   std::vector<int> eval_val_vector;//評価値が順番に2^n-1こ入っている。
   std::vector<int>  goods_price_vector;
@@ -211,8 +211,7 @@ int main(int argc, char *argv[]){
           if(loop_count==0){//1回目のwhileループではgoods_price_vectorが存在しない
               buf[j] = '1';
           }else{
-            cout<<"評価値"<<eval_val_vector[j]<<",(loop_count-1)*goods_num+j:"<<(loop_count-1)*goods_num+j<<",値段:"<<goods_price_vector[(loop_count-1)*goods_num+j]<<endl;
-            if(eval_val_vector[j]>goods_price_vector[(loop_count-1)*goods_num+j]){
+            if(eval_val_vector[j]>goods_price_vector[j]){
                buf[j] = '1';
             }else{
                buf[j] = '0';
@@ -300,10 +299,8 @@ int main(int argc, char *argv[]){
       }
     }
     ofs2<<endl;
-    //printf("ここで次の入力待ち&SVM run");
-    if(is_firstday==0){
-      SVM();
-    }
+    printf("ここで次の入力待ち&SVM run");
+    SVM();
     loop_count++;
     cout<<"loop_count:"<<loop_count<<endl;
 
@@ -454,7 +451,7 @@ for(int temp_client =0;temp_client<CLIENT_NUM;temp_client++){
     }
 
     //出力
-    //cout<<"alpha"<<endl;
+    cout<<"alpha"<<endl;
     for ( i = 0; i <n; i++){
     // cout<<"alpha["<<i<<"]:"<<alpha[i]<<endl;
       if(alpha[i]>alpha[alpha_max_number]){
@@ -472,7 +469,7 @@ for(int temp_client =0;temp_client<CLIENT_NUM;temp_client++){
    // cout<<"weight[1]="<<weight[1]<<endl;
 
     //alpha_max_numberはalphaが最大の番号
-    //cout<<"alpha_max_number"<<alpha_max_number<<endl;
+    cout<<"alpha_max_number"<<alpha_max_number<<endl;
     //カーネルは内積
     Kernel=(weight[0]*data[alpha_max_number].input_first+weight[1]*data[alpha_max_number].input_second);
 

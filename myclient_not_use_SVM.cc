@@ -16,7 +16,7 @@
 #include <iomanip>
 #include "QuadProg++.hh"
 #define BUF_LEN 1024                      // バッファのサイズ 
-#define EVAL_VALUE_FILE "./kadai4_data/2client-2goods-1.dat"
+#define EVAL_VALUE_FILE "./kadai4_data/2client-2goods-2.dat"
 #define LOG_FILE "./kadai4_data/output_goods1_client1.dat"
 //for SVM
 #define sigma 7
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
   //char host[BUF_LEN] = "127.0.0.1";    // 接続するホスト名 
   char path[BUF_LEN] = "/";              // 要求するパス 
   unsigned short port = 5000;            // 接続するポート番号 
-  string string_myname="kadai4_client_name";//クライアント名
+  string string_myname="kadai4_client_weak";//クライアント名
   string str;
   std::vector<int> eval_val_vector;//評価値が順番に2^n-1こ入っている。
   std::vector<int>  goods_price_vector;
