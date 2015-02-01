@@ -60,3 +60,5 @@ SVMはgoods_price回実行してSVM_expected_price[0]からSVM_expected_price[go
 
 ログファイルが存在しないとき、（１日目のとき）。is_firstday=1とする。このとき、自分の予算より商品がひくかったら入札する。たかくなったら入札しない。SVMはつかわない。
 ログファイルが存在するとき(2日目以降のとき)、is_firstday=0とする。
+
+

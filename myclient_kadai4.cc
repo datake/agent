@@ -16,7 +16,7 @@
 #include <iomanip>
 #include "QuadProg++.hh"
 #define BUF_LEN 1024                      // バッファのサイズ 
-#define EVAL_VALUE_FILE "./kadai4_data/2client-2goods-1.dat"
+#define EVAL_VALUE_FILE "./kadai4_data/2client-2goods-2.dat"
 #define LOG_FILE "./kadai4_goods_client_log/output_goods1_client1.dat"
 //for SVM
 #define sigma 7
@@ -215,6 +215,7 @@ int main(int argc, char *argv[]){
               buf[j] = '1';
           }else{
             cout<<"firstday!!評価値"<<eval_val_vector[j]<<",(loop_count-1)*goods_num+j:"<<(loop_count-1)*goods_num+j<<",値段:"<<goods_price_vector[(loop_count-1)*goods_num+j]<<endl;
+            //自分の予算>現在の価格なら入札
             if(eval_val_vector[j]>goods_price_vector[(loop_count-1)*goods_num+j]){
                buf[j] = '1';
             }else{
@@ -229,14 +230,27 @@ int main(int argc, char *argv[]){
               buf[j] = '1';
         }else{
           cout<<"NOTfirstday!!評価値:"<<eval_val_vector[j]<<",SVM_expected_price[j+1]:"<<SVM_expected_price[j+1]<<endl;
+          //自分の予算>相手の予算
           if((eval_val_vector[j]-SVM_expected_price[j+1])>0){
-            buf[j] = '1';
-          }else{
-             buf[j] = '0';
+             //自分の予算>現在の価格なら入札
+            if(eval_val_vector[j]>goods_price_vector[(loop_count-1)*goods_num+j]){
+               buf[j] = '1';
+            }else{
+               buf[j] = '0';
+            }
+
+          }else{//相手の予算>自分の予算
+            // 相手の予算>現在価格+5 入札
+           if(SVM_expected_price[j+1]>goods_price_vector[(loop_count-1)*goods_num+j]+5){
+               buf[j] = '1';
+            }else{
+               buf[j] = '0';
+            }
           }
         }
       }
     }
+
     
 
     buf[j] = '\n';
